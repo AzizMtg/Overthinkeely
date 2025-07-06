@@ -1,14 +1,14 @@
-# 🤯 Overthinkily
+# 🤯 Overthinkeely
 
 *AI took your job. Now it wants your emotional baggage too.*
 
-Overthinkily is a playful AI-powered tool that overthinks things *so you don't have to*. Whether it's responding to a risky text, writing the perfect email, or interpreting vague feedback from your manager, Overthinkily will obsessively analyze, rephrase, and catastrophize like your anxious inner voice—only faster.
+Overthinkeely is a playful AI-powered tool that overthinks things *so you don't have to*. Whether it's responding to a risky text, writing the perfect email, or interpreting vague feedback from your manager, Overthinkeely will obsessively analyze, rephrase, and catastrophize like your anxious inner voice—only faster.
 
 ---
 
 ## 💡 What It Does
 
-Overthinkily takes a message, situation, or prompt and returns:
+Overthinkeely takes a message, situation, or prompt and returns:
 
 - Multiple overanalyzed interpretations
 - A range of hypothetical replies (from safe to socially chaotic)
