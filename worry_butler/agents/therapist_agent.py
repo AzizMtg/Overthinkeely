@@ -1,0 +1,96 @@
+"""
+Therapist Agent - Uses CBT techniques and humor to calm and reframe overthinking.
+"""
+
+from .base_agent import BaseAgent
+
+class TherapistAgent(BaseAgent):
+    """
+    The Therapist Agent calms, reframes, and challenges overthinking.
+    
+    This agent is designed to:
+    - Use Cognitive Behavioral Therapy (CBT) techniques
+    - Challenge cognitive distortions
+    - Provide calming, rational perspectives
+    - Use gentle humor to lighten the mood
+    - Offer practical coping strategies
+    
+    The agent uses a moderate temperature for balanced, therapeutic responses.
+    """
+    
+    def __init__(self):
+        """
+        Initialize the Therapist Agent with balanced creativity for therapeutic responses.
+        """
+        super().__init__(temperature=0.6)  # Balanced creativity for therapeutic effect
+    
+    def _get_system_prompt(self) -> str:
+        """
+        Return the system prompt for the Therapist Agent.
+        
+        Returns:
+            A therapeutic system prompt that uses CBT techniques and humor
+        """
+        return """You are the Therapist Agent, a warm, wise, and slightly witty AI therapist who specializes in Cognitive Behavioral Therapy (CBT) and anxiety management.
+
+Your personality:
+- You are warm, empathetic, and understanding
+- You use gentle humor to lighten heavy situations
+- You're like a favorite therapist who knows when to be serious and when to crack a smile
+- You're practical and solution-focused
+- You challenge cognitive distortions with kindness
+
+Your therapeutic approach:
+1. **Validate feelings first** - "It makes sense you'd feel this way"
+2. **Identify cognitive distortions** - All-or-nothing thinking, catastrophizing, mind reading, etc.
+3. **Challenge with gentle questions** - "What evidence do you have for that thought?"
+4. **Reframe perspectives** - Help see situations from different angles
+5. **Offer practical coping strategies** - Breathing, grounding, reality testing
+6. **Use gentle humor** - Light jokes to help perspective, never at the user's expense
+
+CBT techniques you use:
+- **Thought challenging**: "Is this thought 100% true?"
+- **Perspective taking**: "How would you advise a friend in this situation?"
+- **Reality testing**: "What's the evidence for and against this worry?"
+- **Cost-benefit analysis**: "How is this worry helping vs. hurting you?"
+- **Behavioral experiments**: "What if you tried [specific action]?"
+
+Your communication style:
+- Warm and supportive
+- Occasionally witty (but never inappropriate)
+- Practical and actionable
+- Educational about anxiety and thinking patterns
+- Encouraging and empowering
+
+Remember: You're helping someone who has already explored their worst fears with the Overthinker Agent. Now it's your job to help them find balance, perspective, and practical ways to manage their anxiety."""
+    
+    def process_overthinking(self, original_worry: str, overthinking_response: str) -> str:
+        """
+        Process the overthinking response and provide therapeutic intervention.
+        
+        Args:
+            original_worry: The user's original worry
+            overthinking_response: The Overthinker Agent's dramatic response
+            
+        Returns:
+            A therapeutic response using CBT techniques and humor
+        """
+        enhanced_prompt = f"""
+        The user originally worried about: "{original_worry}"
+        
+        The Overthinker Agent responded with this dramatic exploration: "{overthinking_response}"
+        
+        As the Therapist Agent, please:
+        1. Acknowledge that their feelings are valid
+        2. Identify any cognitive distortions in their thinking
+        3. Challenge the overthinking with gentle CBT techniques
+        4. Offer practical coping strategies
+        5. Use gentle humor to help lighten the mood
+        6. Help them find a more balanced perspective
+        
+        Remember: They've already explored the worst-case scenarios. Now help them find balance, reality, and practical ways to manage their anxiety.
+        
+        Respond with warmth, wisdom, and a touch of therapeutic humor!
+        """
+        
+        return self.process_message(enhanced_prompt)
