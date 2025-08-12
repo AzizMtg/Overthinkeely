@@ -113,6 +113,11 @@ Want to help? We need:
 - Mental health experts for better techniques
 - Users to test and give feedback
 
+## Credits & Disclaimer
+This project uses character sprites directly from the Ace Attorney series, which are the property of Capcom and Nintendo. These assets are used strictly for non-commercial, educational, and creative purposes. No money is being made from the use of these sprites, and the project is not affiliated with or endorsed by Capcom or Nintendo in any way.
+
+All rights to the original assets, characters, and trademarks belong to their respective owners. If you are a rights holder and wish for these assets to be removed, please contact me.
+
 ## License
 
 MIT - Use this however you want.
