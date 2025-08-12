@@ -3,6 +3,7 @@ Executive Agent - Summarizes the entire process into one actionable or reassurin
 """
 
 from .base_agent import BaseAgent
+import os
 
 class ExecutiveAgent(BaseAgent):
     """
@@ -18,11 +19,25 @@ class ExecutiveAgent(BaseAgent):
     The agent uses a lower temperature for focused, concise responses.
     """
     
-    def __init__(self):
+    def __init__(self, provider: str = "ollama", ollama_model: str = None, ollama_base_url: str = None):
         """
-        Initialize the Executive Agent with focused creativity for concise responses.
+        Initialize the Executive Agent with focused, concise responses.
+        
+        Args:
+            provider: AI provider to use ("grok", "openai", or "ollama")
+            ollama_model: Model name for Ollama (e.g., 'llama3.1:8b')
+            ollama_base_url: Base URL for Ollama server
         """
-        super().__init__(temperature=0.3)  # Low creativity for focused, concise responses
+        # Use passed parameters or fall back to environment variables
+        ollama_model = ollama_model or os.getenv("OLLAMA_MODEL", "llama3.1:8b")
+        ollama_base_url = ollama_base_url or os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
+        
+        super().__init__(
+            temperature=0.3,  # Low creativity for focused, actionable responses
+            provider=provider,
+            ollama_model=ollama_model,
+            ollama_base_url=ollama_base_url
+        )
     
     def _get_system_prompt(self) -> str:
         """

@@ -3,6 +3,7 @@ Therapist Agent - Uses CBT techniques and humor to calm and reframe overthinking
 """
 
 from .base_agent import BaseAgent
+import os
 
 class TherapistAgent(BaseAgent):
     """
@@ -18,11 +19,25 @@ class TherapistAgent(BaseAgent):
     The agent uses a moderate temperature for balanced, therapeutic responses.
     """
     
-    def __init__(self):
+    def __init__(self, provider: str = "ollama", ollama_model: str = None, ollama_base_url: str = None):
         """
-        Initialize the Therapist Agent with balanced creativity for therapeutic responses.
+        Initialize the Therapist Agent with balanced creativity and rationality.
+        
+        Args:
+            provider: AI provider to use ("grok", "openai", or "ollama")
+            ollama_model: Model name for Ollama (e.g., 'llama3.1:8b')
+            ollama_base_url: Base URL for Ollama server
         """
-        super().__init__(temperature=0.6)  # Balanced creativity for therapeutic effect
+        # Use passed parameters or fall back to environment variables
+        ollama_model = ollama_model or os.getenv("OLLAMA_MODEL", "llama3.1:8b")
+        ollama_base_url = ollama_base_url or os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
+        
+        super().__init__(
+            temperature=0.7,  # Balanced creativity for therapeutic responses
+            provider=provider,
+            ollama_model=ollama_model,
+            ollama_base_url=ollama_base_url
+        )
     
     def _get_system_prompt(self) -> str:
         """

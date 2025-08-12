@@ -3,6 +3,7 @@ Overthinker Agent - Generates worst-case scenarios in a melodramatic style.
 """
 
 from .base_agent import BaseAgent
+import os
 
 class OverthinkerAgent(BaseAgent):
     """
@@ -17,11 +18,25 @@ class OverthinkerAgent(BaseAgent):
     The agent uses a higher temperature for more creative, dramatic responses.
     """
     
-    def __init__(self):
+    def __init__(self, provider: str = "ollama", ollama_model: str = None, ollama_base_url: str = None):
         """
         Initialize the Overthinker Agent with high creativity for dramatic responses.
+        
+        Args:
+            provider: AI provider to use ("grok", "openai", or "ollama")
+            ollama_model: Model name for Ollama (e.g., 'llama3.1:8b')
+            ollama_base_url: Base URL for Ollama server
         """
-        super().__init__(temperature=0.9)  # High creativity for dramatic effect
+        # Use passed parameters or fall back to environment variables
+        ollama_model = ollama_model or os.getenv("OLLAMA_MODEL", "llama3.1:8b")
+        ollama_base_url = ollama_base_url or os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
+        
+        super().__init__(
+            temperature=0.9,  # High creativity for dramatic effect
+            provider=provider,
+            ollama_model=ollama_model,
+            ollama_base_url=ollama_base_url
+        )
     
     def _get_system_prompt(self) -> str:
         """

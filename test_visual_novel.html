@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Worry Butler - Ace Attorney Style Visual Novel 🏛️⚖️</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Crimson+Text:wght@400;600;700&display=swap');
+        
+        * {
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Crimson Text', serif;
+            margin: 0;
+            padding: 0;
+            background: #000;
+            color: white;
+            overflow: hidden;
+            user-select: none;
+            cursor: url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTkgMTJMMTEgMTRMMTUgMTBNMjEgMTJDMjEgMTYuOTcwNiAxNi45NzA2IDIxIDEyIDIxQzcuMDI5NDQgMjEgMyAxNi45NzA2IDMgMTJDMyA3LjAyOTQ0IDcuMDI5NDQgMyAxMiAzQzE2Ljk3MDYgMyAyMSA3LjAyOTQ0IDIxIDEyWiIgc3Ryb2tlPSIjZmZkNzAwIiBzdHJva2Utd2lkdGg9IjIiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8L3N2Zz4K'), auto;
+        }
+        
+        .game-container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            background: #000;
+            overflow: hidden;
+        }
+        
+        /* Background System */
+        .background-layer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            transition: opacity 0.8s ease-in-out;
+        }
+        
+        .courtroom-bg {
+            background: linear-gradient(
+                135deg, 
+                #2c1810 0%, 
+                #4a3728 25%, 
+                #3d2b1f 50%, 
+                #2c1810 75%, 
+                #1a1a1a 100%
+            );
+        }
+        
+        .prosecutor-bg {
+            background: linear-gradient(
+                135deg,
+                #8b0000 0%,
+                #dc143c 25%,
+                #b22222 50%,
+                #8b0000 75%,
+                #2c0e0e 100%
+            );
+        }
+        
+        .defense-bg {
+            background: linear-gradient(
+                135deg,
+                #000080 0%,
+                #4169e1 25%,
+                #1e90ff 50%,
+                #000080 75%,
+                #0e0e2c 100%
+            );
+        }
+        
+        .judge-bg {
+            background: linear-gradient(
+                135deg,
+                #8b4513 0%,
+                #daa520 25%,
+                #b8860b 50%,
+                #8b4513 75%,
+                #2c1e0e 100%
+            );
+        }
+        
+        /* Add texture overlay */
+        .background-layer::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 20% 50%, rgba(255,255,255,0.03) 1px, transparent 1px),
+                radial-gradient(circle at 80% 50%, rgba(255,255,255,0.03) 1px, transparent 1px),
+                radial-gradient(circle at 40% 20%, rgba(255,255,255,0.02) 1px, transparent 1px);
+            background-size: 50px 50px, 70px 70px, 30px 30px;
+            opacity: 0.8;
+        }
+        
+        /* Character Sprite System */
+        .character-container {
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100%;
+            height: 70%;
+            z-index: 2;
+            display: flex;
+            justify-content: center;
+            align-items: flex-end;
+        }
+        
+        .character-sprite {
+            max-height: 100%;
+            max-width: 60%;
+            object-fit: contain;
+            filter: drop-shadow(0 20px 40px rgba(0,0,0,0.8));
+            transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+        
+        .sprite-animation {
+            animation: spriteAppear 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+        
+        @keyframes spriteAppear {
+            0% { 
+                transform: translateY(100px) scale(0.8); 
+                opacity: 0; 
+                filter: drop-shadow(0 20px 40px rgba(0,0,0,0.8)) blur(2px);
+            }
+            50% { 
+                transform: translateY(-10px) scale(1.02); 
+                opacity: 0.8; 
+                filter: drop-shadow(0 25px 50px rgba(0,0,0,0.9)) blur(1px);
+            }
+            100% { 
+                transform: translateY(0) scale(1); 
+                opacity: 1; 
+                filter: drop-shadow(0 20px 40px rgba(0,0,0,0.8)) blur(0px);
+            }
+        }
+        
+        .sprite-pulse {
+            animation: spritePulse 0.3s ease-in-out;
+        }
+        
+        @keyframes spritePulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+        }
+        
+        /* Ace Attorney Style Text Box */
+        .text-box-container {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 35%;
+            z-index: 3;
+        }
+        
+        .text-box {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(
+                180deg,
+                rgba(0, 0, 0, 0.95) 0%,
+                rgba(20, 20, 20, 0.98) 100%
+            );
+            border-top: 4px solid #ffd700;
+            box-shadow: 
+                0 -10px 30px rgba(0,0,0,0.8),
+                inset 0 4px 10px rgba(255, 215, 0, 0.1);
+        }
+        
+        .text-box::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: linear-gradient(
+                90deg,
+                transparent 0%,
+                #ffd700 20%,
+                #ffed4e 50%,
+                #ffd700 80%,
+                transparent 100%
+            );
+            animation: shimmer 3s ease-in-out infinite;
+        }
+        
+        @keyframes shimmer {
+            0%, 100% { opacity: 0.6; }
+            50% { opacity: 1; }
+        }
+        
+        .character-nameplate {
+            position: absolute;
+            top: 15px;
+            left: 30px;
+            background: linear-gradient(135deg, #ffd700, #ffed4e);
+            color: #000;
+            padding: 8px 20px;
+            border-radius: 20px;
+            font-weight: 700;
+            font-size: 16px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            box-shadow: 
+                0 4px 15px rgba(255, 215, 0, 0.4),
+                inset 0 2px 5px rgba(255, 255, 255, 0.3);
+            transform: translateY(-50%);
+            border: 2px solid #e6c200;
+        }
+        
+        .dialogue-text-area {
+            padding: 60px 40px 40px 40px;
+            height: 100%;
+            display: flex;
+            align-items: flex-start;
+            justify-content: flex-start;
+        }
+        
+        .dialogue-text {
+            font-size: 20px;
+            line-height: 1.6;
+            color: #ffffff;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+            max-height: calc(100% - 20px);
+            overflow-y: auto;
+            padding-right: 20px;
+            letter-spacing: 0.5px;
+        }
+        
+        /* Custom scrollbar */
+        .dialogue-text::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        .dialogue-text::-webkit-scrollbar-track {
+            background: rgba(255, 215, 0, 0.1);
+            border-radius: 4px;
+        }
+        
+        .dialogue-text::-webkit-scrollbar-thumb {
+            background: linear-gradient(180deg, #ffd700, #e6c200);
+            border-radius: 4px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+        }
+        
+        .text-continue-indicator {
+            position: absolute;
+            bottom: 15px;
+            right: 30px;
+            color: #ffd700;
+            font-size: 14px;
+            animation: blink 1.5s infinite;
+            font-weight: 600;
+        }
+        
+        @keyframes blink {
+            0%, 50% { opacity: 1; }
+            51%, 100% { opacity: 0.3; }
+        }
+        
+        /* UI Controls */
+        .ui-controls {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            z-index: 5;
+            display: flex;
+            gap: 10px;
+        }
+        
+        .control-button {
+            background: linear-gradient(135deg, rgba(255, 215, 0, 0.9), rgba(230, 194, 0, 0.9));
+            border: 2px solid #ffd700;
+            border-radius: 25px;
+            color: #000;
+            padding: 10px 18px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 700;
+            transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            box-shadow: 0 4px 15px rgba(255, 215, 0, 0.3);
+        }
+        
+        .control-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(255, 215, 0, 0.5);
+            background: linear-gradient(135deg, #ffd700, #ffed4e);
+        }
+        
+        .control-button:active {
+            transform: translateY(0);
+        }
+        
+        .control-button.active {
+            background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+            border-color: #ff6b6b;
+            color: white;
+        }
+        
+        /* Progress System */
+        .progress-container {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            z-index: 5;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 15px 20px;
+            border-radius: 15px;
+            border: 2px solid #ffd700;
+            min-width: 250px;
+        }
+        
+        .progress-label {
+            font-size: 12px;
+            color: #ffd700;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 600;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: rgba(255, 215, 0, 0.2);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #ffd700, #ffed4e, #ffd700);
+            background-size: 200% 100%;
+            animation: progressShine 2s ease-in-out infinite;
+            transition: width 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            border-radius: 4px;
+            width: 0%;
+        }
+        
+        @keyframes progressShine {
+            0% { background-position: -200% 0; }
+            100% { background-position: 200% 0; }
+        }
+        
+        .test-overlay {
+            position: absolute;
+            bottom: 40%;
+            left: 20px;
+            z-index: 4;
+            background: rgba(0, 100, 0, 0.9);
+            color: #00ff00;
+            padding: 20px;
+            border-radius: 15px;
+            border: 2px solid #00ff00;
+            max-width: 320px;
+            font-size: 13px;
+            box-shadow: 0 10px 30px rgba(0, 100, 0, 0.3);
+        }
+        
+        .test-overlay h3 {
+            margin: 0 0 12px 0;
+            font-size: 16px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+        
+        .test-overlay p {
+            margin: 8px 0;
+            line-height: 1.4;
+        }
+        
+        .test-overlay strong {
+            color: #7fff00;
+        }
+        
+        /* Sound Effect Indicators */
+        .sound-effect {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 6;
+            pointer-events: none;
+            font-size: 24px;
+            color: #ffd700;
+            font-weight: bold;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+            animation: soundPop 0.8s ease-out forwards;
+        }
+        
+        @keyframes soundPop {
+            0% { 
+                transform: translate(-50%, -50%) scale(0.5); 
+                opacity: 0; 
+            }
+            30% { 
+                transform: translate(-50%, -50%) scale(1.2); 
+                opacity: 1; 
+            }
+            100% { 
+                transform: translate(-50%, -50%) scale(1); 
+                opacity: 0; 
+            }
+        }
+        
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .dialogue-text {
+                font-size: 18px;
+                padding: 50px 25px 30px 25px;
+            }
+            
+            .character-nameplate {
+                left: 20px;
+                font-size: 14px;
+                padding: 6px 16px;
+            }
+            
+            .control-button {
+                padding: 8px 14px;
+                font-size: 11px;
+            }
+            
+            .progress-container {
+                min-width: 200px;
+                padding: 12px 15px;
+            }
+            
+            .character-sprite {
+                max-width: 80%;
+            }
+        }
+        
+        /* Special Effects */
+        .screen-flash {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 10;
+            pointer-events: none;
+            background: rgba(255, 255, 255, 0.8);
+            animation: flash 0.2s ease-out;
+        }
+        
+        @keyframes flash {
+            0% { opacity: 0; }
+            50% { opacity: 1; }
+            100% { opacity: 0; }
+        }
+        
+        .text-typewriter {
+            overflow: hidden;
+            border-right: 2px solid #ffd700;
+            white-space: nowrap;
+            animation: typing 3s steps(40, end), blink-caret 0.75s step-end infinite;
+        }
+        
+        @keyframes typing {
+            from { width: 0; }
+            to { width: 100%; }
+        }
+        
+        @keyframes blink-caret {
+            from, to { border-color: transparent; }
+            50% { border-color: #ffd700; }
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <!-- Background Layers -->
+        <div id="backgroundLayer" class="background-layer courtroom-bg"></div>
+        
+        <!-- Character Sprite -->
+        <div class="character-container">
+            <img id="characterSprite" class="character-sprite" src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjYwMCIgdmlld0JveD0iMCAwIDQwMCA2MDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxkZWZzPgo8bGluZWFyR3JhZGllbnQgaWQ9ImJsYWNrUm9iZSIgeDE9IjAlIiB5MT0iMCUiIHgyPSIxMDAlIiB5Mj0iMTAwJSI+CjxzdG9wIG9mZnNldD0iMCUiIHN0eWxlPSJzdG9wLWNvbG9yOiMyYzJjMmM7c3RvcC1vcGFjaXR5OjEiIC8+CjxzdG9wIG9mZnNldD0iMTAwJSIgc3R5bGU9InN0b3AtY29sb3I6IzAwMDswcGFjaXR5OjEiIC8+CjwvbGluZWFyR3JhZGllbnQ+CjxsaW5lYXJHcmFkaWVudCBpZD0iZ29sZFRyaW0iIHgxPSIwJSIgeTE9IjAlIiB4Mj0iMTAwJSIgeTI9IjEwMCUiPgo8c3RvcCBvZmZzZXQ9IjAlIiBzdHlsZT0ic3RvcC1jb2xvcjojZmZkNzAwO3N0b3Atb3BhY2l0eToxIiAvPgo8c3RvcCBvZmZzZXQ9IjEwMCUiIHN0eWxlPSJzdG9wLWNvbG9yOiNlNmMyMDA7c3RvcC1vcGFjaXR5OjEiIC8+CjwvbGluZWFyR3JhZGllbnQ+CjwvZGVmcz4KPCEtLSBKdWRnZSBGaWd1cmUgLS0+CjxyZWN0IHg9IjE1MCIgeT0iMjAwIiB3aWR0aD0iMTAwIiBoZWlnaHQ9IjQwMCIgZmlsbD0idXJsKCNibGFja1JvYmUpIiByeD0iMTAiLz4KPCEtLSBHb2xkIFRyaW0gLS0+CjxyZWN0IHg9IjE0NSIgeT0iMTk1IiB3aWR0aD0iMTEwIiBoZWlnaHQ9IjIwIiBmaWxsPSJ1cmwoI2dvbGRUcmltKSIgcng9IjUiLz4KPCEtLSBIZWFkIC0tPgo8Y2lyY2xlIGN4PSIyMDAiIGN5PSIxNTAiIHI9IjUwIiBmaWxsPSIjZmZkYmFjIiBzdHJva2U9IiMwMDAiIHN0cm9rZS13aWR0aD0iMiIvPgo8IS0tIEV5ZXMgLS0+CjxjaXJjbGUgY3g9IjE4NSIgY3k9IjE0MCIgcj0iNSIgZmlsbD0iIzAwMCIvPgo8Y2lyY2xlIGN4PSIyMTUiIGN5PSIxNDAiIHI9IjUiIGZpbGw9IiMwMDAiLz4KPCEtLSBNb3V0aCAtLT4KPGVsbGlwc2UgY3g9IjIwMCIgY3k9IjE2NSIgcng9IjE1IiByeT0iOCIgZmlsbD0iIzAwMCIvPgo8IS0tIEhhdCAtLT4KPHJlY3QgeD0iMTcwIiB5PSIxMDAiIHdpZHRoPSI2MCIgaGVpZ2h0PSI0MCIgZmlsbD0idXJsKCNibGFja1JvYmUpIiByeD0iNSIvPgo8cmVjdCB4PSIxNjUiIHk9IjkwIiB3aWR0aD0iNzAiIGhlaWdodD0iMjAiIGZpbGw9InVybCgjZ29sZFRyaW0pIiByeD0iMTAiLz4KPCEtLSBBcm1zIC0tPgo8cmVjdCB4PSIxMDAiIHk9IjI1MCIgd2lkdGg9IjQwIiBoZWlnaHQ9IjE1MCIgZmlsbD0idXJsKCNibGFja1JvYmUpIiByeD0iMjAiLz4KPHJlY3QgeD0iMjYwIiB5PSIyNTAiIHdpZHRoPSI0MCIgaGVpZ2h0PSIxNTAiIGZpbGw9InVybCgjYmxhY2tSb2JlKSIgcng9IjIwIi8+CjwvZXZnPg==" alt="Judge Character">
+        </div>
+        
+        <!-- Text Box -->
+        <div class="text-box-container">
+            <div class="text-box">
+                <div id="characterNameplate" class="character-nameplate">JUDGE</div>
+                <div class="dialogue-text-area">
+                    <div id="dialogueText" class="dialogue-text">
+                        Welcome to the Worry Butler courtroom! Click anywhere to begin the trial...
+                    </div>
+                </div>
+                <div id="continueIndicator" class="text-continue-indicator">▶ Click to continue</div>
+            </div>
+        </div>
+        
+        <!-- UI Controls -->
+        <div class="ui-controls">
+            <button class="control-button" onclick="skipDialogue()">⏭ Skip</button>
+            <button id="autoButton" class="control-button" onclick="toggleAuto()">▶ Auto</button>
+            <button class="control-button" onclick="resetTrial()">🔄 Reset</button>
+        </div>
+        
+        <!-- Progress Display -->
+        <div class="progress-container">
+            <div class="progress-label">Trial Progress</div>
+            <div class="progress-bar">
+                <div id="progressFill" class="progress-fill"></div>
+            </div>
+        </div>
+        
+        <!-- Test Mode Overlay -->
+        <div class="test-overlay">
+            <h3>🧪 Test Mode Active</h3>
+            <p><strong>Enhanced Ace Attorney Style!</strong></p>
+            <p>• Proper character sprites with animations</p>
+            <p>• Authentic text box styling</p>
+            <p>• Dynamic backgrounds per character</p>
+            <p>• Sound effect indicators</p>
+            <p>• Smooth transitions and effects</p>
+            <p><strong>Click anywhere to advance dialogue!</strong></p>
+        </div>
+    </div>
+
+    <script>
+        // Enhanced test dialogue with proper character data
+        const testDialogue = [
+            {
+                character: "PROSECUTOR",
+                name: "PROSECUTOR",
+                text: "OH, THE HORROR! THE UNTHINKABLE! The absolute WORST that could POSSIBLY happen! Picture this, if you dare: You walk into your first class, and EVERYONE is already in tight-knit friend groups! They're all laughing and sharing inside jokes while you stand there like a lonely island in a sea of social butterflies! And what if you sit at the wrong table at lunch? The CRIMES OF SOCIAL ETIQUETTE! You could accidentally sit with the 'cool kids' and they'll all give you that look - you know the one that says 'Who invited this random person to our exclusive club?' But wait, it gets WORSE! What if you're assigned a group project and NOBODY wants to work with you? You'll be the last one picked, like in gym class, but this time it's your academic future at stake! The very thought sends shivers down my digital spine! This isn't just a worry - this is a FULL-BLOWN SOCIAL APOCALYPSE waiting to happen!",
+                sprite: "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjYwMCIgdmlld0JveD0iMCAwIDQwMCA2MDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxkZWZzPgo8bGluZWFyR3JhZGllbnQgaWQ9InJlZFN1aXQiIHgxPSIwJSIgeTE9IjAlIiB4Mj0iMTAwJSIgeTI9IjEwMCUiPgo8c3RvcCBvZmZzZXQ9IjAlIiBzdHlsZT0ic3RvcC1jb2xvcjojZGMxNDNjO3N0b3Atb3BhY2l0eToxIiAvPgo8c3RvcCBvZmZzZXQ9IjEwMCUiIHN0eWxlPSJzdG9wLWNvbG9yOiM4YjAwMDA7c3RvcC1vcGFjaXR5OjEiIC8+CjwvbGluZWFyR3JhZGllbnQ+CjwvZGVmcz4KPCEtLSBQcm9zZWN1dG9yIEZpZ3VyZSAtLT4KPHJlY3QgeD0iMTQwIiB5PSIyMDAiIHdpZHRoPSIxMjAiIGhlaWdodD0iNDAwIiBmaWxsPSJ1cmwoI3JlZFN1aXQpIiByeD0iMTAiLz4KPCEtLSBIZWFkIC0tPgo8Y2lyY2xlIGN4PSIyMDAiIGN5PSIxNTAiIHI9IjUwIiBmaWxsPSIjZmZkYmFjIiBzdHJva2U9IiMwMDAiIHN0cm9rZS13aWR0aD0iMiIvPgo8IS0tIEFuZ3J5IEV5ZXMgLS0+CjxwYXRoIGQ9Ik0xNzUgMTM1IEwxOTUgMTQ1IEwxNzUgMTU1IiBzdHJva2U9IiNmZjAwMDAiIHN0cm9rZS13aWR0aD0iNCIgZmlsbD0ibm9uZSIvPgo8cGF0aCBkPSJNMjI1IDEzNSBMMjA1IDE0NSBMMjI1IDE1NSIgc3Ryb2tlPSIjZmYwMDAwIiBzdHJva2Utd2lkdGg9IjQiIGZpbGw9Im5vbmUiLz4KPCEtLSBBbmdyeSBNb3V0aCAtLT4KPHBhdGggZD

@@ -1,175 +1,155 @@
+#!/usr/bin/env python3
 """
-Main Worry Butler system that orchestrates all three agents.
+Core Worry Butler system implementing a chained multi-agent workflow.
+
+This module orchestrates three specialized AI agents that work in sequence:
+1. Overthinker Agent - generates dramatic worst-case scenarios
+2. Therapist Agent - applies CBT techniques to reframe and calm
+3. Executive Agent - creates actionable, reassuring summaries
 """
 
 from typing import Dict, Any, List
-from langgraph.graph import StateGraph, END
-from langgraph.prebuilt import ToolNode
-from pydantic import BaseModel, Field
-from ..agents import OverthinkerAgent, TherapistAgent, ExecutiveAgent
-import json
+from worry_butler.agents.overthinker_agent import OverthinkerAgent
+from worry_butler.agents.therapist_agent import TherapistAgent
+from worry_butler.agents.executive_agent import ExecutiveAgent
 
-class WorryState(BaseModel):
-    """
-    State object that flows through the LangGraph workflow.
-    
-    This tracks the progress of a worry through all three agents.
-    """
-    original_worry: str = Field(description="The user's original worry statement")
-    overthinking_response: str = Field(default="", description="Overthinker Agent's response")
-    therapy_response: str = Field(default="", description="Therapist Agent's response")
-    executive_summary: str = Field(default="", description="Executive Agent's final summary")
-    metadata: Dict[str, Any] = Field(default_factory=dict, description="Additional metadata")
 
 class WorryButler:
     """
-    Main Worry Butler system that orchestrates the three-agent workflow.
+    Main orchestrator for the three-agent worry processing system.
     
-    This class uses LangGraph to create a sequential workflow where:
-    1. Overthinker Agent explores worst-case scenarios
-    2. Therapist Agent provides CBT-based intervention
-    3. Executive Agent creates a final summary
-    
-    The system is designed to be modular and easily extensible.
+    Implements a sequential chain where each agent's output becomes
+    the input for the next agent in the workflow.
     """
     
-    def __init__(self):
+    def __init__(self, use_openai: bool = False, use_ollama: bool = True, ollama_model: str = None, ollama_base_url: str = None):
         """
-        Initialize the Worry Butler system with all three agents.
-        """
-        # Initialize all three agents
-        self.overthinker = OverthinkerAgent()
-        self.therapist = TherapistAgent()
-        self.executive = ExecutiveAgent()
-        
-        # Build the LangGraph workflow
-        self.workflow = self._build_workflow()
-    
-    def _build_workflow(self):
-        """
-        Build the LangGraph workflow that connects all three agents.
-        
-        Returns:
-            A configured LangGraph StateGraph
-        """
-        # Create the state graph
-        workflow = StateGraph(WorryState)
-        
-        # Add nodes for each agent
-        workflow.add_node("overthinker", self._overthinker_node)
-        workflow.add_node("therapist", self._therapist_node)
-        workflow.add_node("executive", self._executive_node)
-        
-        # Define the flow: overthinker -> therapist -> executive -> end
-        workflow.set_entry_point("overthinker")
-        workflow.add_edge("overthinker", "therapist")
-        workflow.add_edge("therapist", "executive")
-        workflow.add_edge("executive", END)
-        
-        # Compile the workflow
-        return workflow.compile()
-    
-    def _overthinker_node(self, state: WorryState) -> WorryState:
-        """
-        Node for the Overthinker Agent.
+        Initialize the Worry Butler with three specialized agents.
         
         Args:
-            state: Current workflow state
-            
-        Returns:
-            Updated state with overthinking response
+            use_openai: Whether to use OpenAI API
+            use_ollama: Whether to use Ollama (open-source) - default True
+            ollama_model: Model name for Ollama (e.g., 'llama3.1:8b')
+            ollama_base_url: Base URL for Ollama server
         """
-        # Process the worry through the Overthinker Agent
-        response = self.overthinker.process_worry(state.original_worry)
+        # Determine the actual provider to use
+        if use_openai:
+            provider = "openai"
+        else:
+            provider = "ollama"
         
-        # Update the state
-        state.overthinking_response = response
-        
-        # Add metadata
-        state.metadata["overthinker_timestamp"] = "completed"
-        
-        return state
-    
-    def _therapist_node(self, state: WorryState) -> WorryState:
-        """
-        Node for the Therapist Agent.
-        
-        Args:
-            state: Current workflow state
-            
-        Returns:
-            Updated state with therapy response
-        """
-        # Process the overthinking through the Therapist Agent
-        response = self.therapist.process_overthinking(
-            state.original_worry,
-            state.overthinking_response
+        # Initialize the three agents with the determined provider
+        self.overthinker = OverthinkerAgent(
+            provider=provider,
+            ollama_model=ollama_model,
+            ollama_base_url=ollama_base_url
         )
         
-        # Update the state
-        state.therapy_response = response
-        
-        # Add metadata
-        state.metadata["therapist_timestamp"] = "completed"
-        
-        return state
-    
-    def _executive_node(self, state: WorryState) -> WorryState:
-        """
-        Node for the Executive Agent.
-        
-        Args:
-            state: Current workflow state
-            
-        Returns:
-            Updated state with executive summary
-        """
-        # Create the final summary through the Executive Agent
-        summary = self.executive.create_summary(
-            state.original_worry,
-            state.overthinking_response,
-            state.therapy_response
+        self.therapist = TherapistAgent(
+            provider=provider,
+            ollama_model=ollama_model,
+            ollama_base_url=ollama_base_url
         )
         
-        # Update the state
-        state.executive_summary = summary
+        self.executive = ExecutiveAgent(
+            provider=provider,
+            ollama_model=ollama_model,
+            ollama_base_url=ollama_base_url
+        )
         
-        # Add metadata
-        state.metadata["executive_timestamp"] = "completed"
-        state.metadata["workflow_completed"] = True
-        
-        return state
+        # Store provider information
+        self.use_openai = use_openai
+        self.use_ollama = use_ollama
+        self.provider = provider
+        self.ollama_model = ollama_model
+        self.ollama_base_url = ollama_base_url
     
-    def process_worry(self, worry: str) -> Dict[str, Any]:
+    def process_worry(self, user_worry: str) -> Dict[str, Any]:
         """
-        Process a worry through the complete three-agent workflow.
+        Process a user's worry through the three-agent chain.
+        
+        This is the main function that implements the sequential workflow:
+        1. Overthinker receives user input → generates dramatic scenario
+        2. Therapist receives Overthinker output → applies CBT techniques
+        3. Executive receives Therapist output → creates actionable summary
         
         Args:
-            worry: The user's worry statement
+            user_worry: The user's original worry statement
             
         Returns:
-            Dictionary containing all agent responses and metadata
+            Dictionary containing the complete conversation chain:
+            - original_worry: User's input
+            - overthinker_response: Dramatic worst-case scenario
+            - therapist_response: CBT reframing and calming response
+            - executive_summary: Actionable, reassuring summary
+            - metadata: Processing information and timestamps
+            
+        Raises:
+            Exception: If any agent fails to process the input
         """
-        # Create initial state
-        initial_state = WorryState(original_worry=worry)
-        
-        # Run the workflow
-        final_state = self.workflow.invoke(initial_state)
-        
-        # Convert to dictionary for easy consumption
-        result = {
-            "original_worry": final_state.original_worry,
-            "overthinker_response": final_state.overthinking_response,
-            "therapist_response": final_state.therapy_response,
-            "executive_summary": final_state.executive_summary,
-            "metadata": final_state.metadata
-        }
-        
-        return result
+        try:
+            # Step 1: Overthinker Agent - Generate dramatic worst-case scenario
+            print("🎭 Overthinker Agent processing...")
+            overthinker_response = self.overthinker.process_worry(user_worry)
+            
+            # Step 2: Therapist Agent - Apply CBT techniques to Overthinker's output
+            print("🧘‍♀️ Therapist Agent processing...")
+            therapist_response = self.therapist.process_overthinking(
+                user_worry, overthinker_response
+            )
+            
+            # Step 3: Executive Agent - Create actionable summary from Therapist's output
+            print("📋 Executive Agent processing...")
+            executive_summary = self.executive.create_summary(
+                user_worry, overthinker_response, therapist_response
+            )
+            
+            # Compile the complete conversation chain
+            result = {
+                "original_worry": user_worry,
+                "overthinker_response": overthinker_response,
+                "therapist_response": therapist_response,
+                "executive_summary": executive_summary,
+                "metadata": {
+                    "workflow_completed": True,
+                    "agent_sequence": ["overthinker", "therapist", "executive"],
+                    "processing_notes": "Three-agent chain completed successfully"
+                }
+            }
+            
+            print("✅ Worry processing complete!")
+            return result
+            
+        except Exception as e:
+            # Comprehensive error handling for the entire workflow
+            error_msg = f"Error in worry processing workflow: {str(e)}"
+            print(f"❌ {error_msg}")
+            
+            # Return partial results if available, with error information
+            partial_result = {
+                "original_worry": user_worry,
+                "error": error_msg,
+                "partial_results": {},
+                "metadata": {
+                    "workflow_completed": False,
+                    "error_occurred": True,
+                    "error_details": str(e)
+                }
+            }
+            
+            # Include any partial results that were generated before the error
+            if 'overthinker_response' in locals():
+                partial_result["partial_results"]["overthinker_response"] = overthinker_response
+            if 'therapist_response' in locals():
+                partial_result["partial_results"]["therapist_response"] = therapist_response
+            if 'executive_summary' in locals():
+                partial_result["partial_results"]["executive_summary"] = executive_summary
+            
+            raise Exception(error_msg)
     
     def get_agent_info(self) -> List[Dict[str, Any]]:
         """
-        Get information about all agents in the system.
+        Get information about all three agents for debugging and monitoring.
         
         Returns:
             List of dictionaries containing agent information
@@ -180,15 +160,41 @@ class WorryButler:
             self.executive.get_agent_info()
         ]
     
-    def process_worry_json(self, worry: str) -> str:
+    def get_provider_info(self) -> Dict[str, Any]:
         """
-        Process a worry and return the result as a JSON string.
+        Get information about the current AI provider configuration.
+        
+        Returns:
+            Dictionary with provider details
+        """
+        return {
+            "provider": self.provider,
+            "use_openai": self.use_openai,
+            "use_ollama": self.use_ollama,
+            "ollama_model": self.ollama_model,
+            "ollama_base_url": self.ollama_base_url
+        }
+    
+    def test_agent_chain(self, test_worry: str = "I'm worried about my presentation tomorrow") -> Dict[str, Any]:
+        """
+        Test the entire agent chain with a sample worry.
+        
+        This is useful for debugging and ensuring all agents are working correctly.
         
         Args:
-            worry: The user's worry statement
+            test_worry: Sample worry to test the system with
             
         Returns:
-            JSON string containing all agent responses
+            Complete test results from the three-agent chain
         """
-        result = self.process_worry(worry)
-        return json.dumps(result, indent=2, ensure_ascii=False)
+        print("🧪 Testing agent chain with sample worry...")
+        print(f"Test input: '{test_worry}'")
+        print("-" * 50)
+        
+        try:
+            result = self.process_worry(test_worry)
+            print("✅ Agent chain test completed successfully!")
+            return result
+        except Exception as e:
+            print(f"❌ Agent chain test failed: {e}")
+            raise

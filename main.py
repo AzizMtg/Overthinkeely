@@ -25,22 +25,60 @@ def main():
     # Load environment variables
     load_dotenv()
     
-    # Check for API key
-    if not os.getenv("OPENAI_API_KEY"):
-        print("❌ Error: OPENAI_API_KEY not found in environment variables")
-        print("Please create a .env file with your OpenAI API key")
-        print("See env_example.txt for the required format")
-        return
+    # Check configuration and determine provider
+    openai_key = os.getenv("OPENAI_API_KEY")
+    
+    if openai_key:
+        print("🔑 OpenAI API key found")
+        choice = input("Choose AI provider:\n1. Ollama (open-source, local) - RECOMMENDED\n2. OpenAI (cloud-based, requires API key)\nEnter choice (1 or 2): ").strip()
+        
+        if choice == "2":
+            use_openai = True
+            use_ollama = False
+            print("🚀 Using OpenAI API")
+        else:
+            use_openai = False
+            use_ollama = True
+            print("🚀 Using Ollama (open-source models)")
+    else:
+        print("🔧 No OpenAI API key found - using Ollama (open-source models)")
+        print("💡 To use OpenAI, add OPENAI_API_KEY to your .env file")
+        use_openai = False
+        use_ollama = True
     
     try:
         # Initialize the Worry Butler
-        print("🚀 Initializing Worry Butler...")
-        butler = WorryButler()
+        print("\n🚀 Initializing Worry Butler...")
+        
+        # Get Ollama configuration from environment
+        ollama_model = os.getenv("OLLAMA_MODEL", "llama3.1:8b")
+        ollama_base_url = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
+        
+        butler = WorryButler(
+            use_grok=False, # Removed Grok API support
+            use_openai=use_openai,
+            use_ollama=use_ollama,
+            ollama_model=ollama_model,
+            ollama_base_url=ollama_base_url
+        )
+        
+        # Show provider information
+        provider_info = butler.get_provider_info()
+        print(f"\n⚙️  Configuration:")
+        print(f"  • Provider: {provider_info['provider']}")
+        if provider_info['use_openai']:
+            print(f"  • Model: OpenAI API")
+        elif provider_info['use_ollama']:
+            print(f"  • Model: {provider_info['ollama_model']}")
+            print(f"  • Server: {provider_info['ollama_base_url']}")
+            print("💡 Make sure Ollama is running: ollama serve")
         
         # Show agent information
         print("\n📋 Agent Information:")
         for agent_info in butler.get_agent_info():
             print(f"  • {agent_info['name']}: {agent_info['description']}")
+            print(f"    Model: {agent_info['model']}")
+            print(f"    Temperature: {agent_info['temperature']}")
         
         print("\n" + "=" * 50)
         print("💭 Ready to process your worries!")
@@ -62,7 +100,10 @@ def main():
                     continue
                 
                 print("\n🔄 Processing your worry through the agents...")
-                print("⏳ This may take a few moments...")
+                if use_ollama:
+                    print("⏳ This may take a few moments with local models...")
+                else:
+                    print("⏳ This may take a few moments...")
                 
                 # Process the worry
                 result = butler.process_worry(worry)
@@ -73,7 +114,7 @@ def main():
                 print(result['overthinker_response'])
                 
                 print("\n🧘‍♀️ THERAPIST AGENT:")
-                print(result['therapy_response'])
+                print(result['therapist_response'])
                 
                 print("\n📋 EXECUTIVE SUMMARY:")
                 print(f"💡 {result['executive_summary']}")
@@ -86,10 +127,18 @@ def main():
                 break
             except Exception as e:
                 print(f"\n❌ Error processing worry: {e}")
+                if use_ollama:
+                    print("💡 Make sure Ollama is running: ollama serve")
+                    print("💡 Check if your model is available: ollama list")
                 print("Please try again or contact support if the problem persists.")
     
     except Exception as e:
         print(f"❌ Error initializing Worry Butler: {e}")
+        if use_ollama:
+            print("\n💡 For Ollama setup help:")
+            print("   1. Install Ollama: https://ollama.ai")
+            print("   2. Start Ollama: ollama serve")
+            print("   3. Pull your model: ollama pull llama3.1:8b")
         print("Please check your configuration and try again.")
 
 if __name__ == "__main__":
