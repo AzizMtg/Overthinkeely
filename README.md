@@ -1,87 +1,118 @@
-# Worry Butler 🤖🧠💭
+# Anxiety Court ⚖️
 
-A multi-agent AI system designed to help users process anxiety and worry through a unique three-stage approach.
+*Put your worries on trial with AI agents*
+| ![Prosecutor](https://github.com/user-attachments/assets/4c52602f-f161-4e55-8bee-c456bdefb943) | ![Defense Attorney](https://github.com/user-attachments/assets/778d6572-563f-4ffa-aa3a-55be1588d141) | ![Judge](https://github.com/user-attachments/assets/e777b83f-1dc7-49e2-9030-38cfd9c624d4) |
+|----------------------------------------------------|-----------------------------------------------------------|------------------------------------------------------|
+| Prosecutor                                         | Defense Attorney                                          | Judge                                                |
+| ![Prosecutor Sprite](prosecutor-sprite.gif)        | ![Defense Attorney Sprite](attorney-sprite.gif)           | ![Judge Sprite](judge-sprite.gif)                    |
 
-## What is Worry Butler?
 
-Worry Butler takes your anxiety statement and processes it through three specialized AI agents:
+## What is Anxiety Court?
 
-1. **Overthinker Agent** 🎭 - Takes your worry to the extreme, exploring worst-case scenarios (safely)
-2. **Therapist Agent** 🧘‍♀️ - Calms, reframes, and challenges the overthinking using CBT techniques and humor
-3. **Executive Agent** 📋 - Summarizes everything into one actionable or reassuring sentence
+A simple AI system that helps you deal with anxiety by putting your worries through a courtroom trial. Three AI agents work together:
+
+- **Prosecutor**: Takes your worry and argues for the worst-case scenarios
+- **Defense Attorney**: Argues why your worry might not be as bad as you think  
+- **Judge**: Makes the final decision and gives you advice
 
 ## How It Works
 
 ```
-User Input → Overthinker → Therapist → Executive → Final Response
+Your worry → Prosecutor argues worst-case → Attorney defends you → Judge decides → You get help
 ```
 
-The system uses LangGraph for agent orchestration, ensuring each agent builds upon the previous one's work to provide comprehensive anxiety processing.
+The agents talk to each other and share information to give you better support.
 
-## Features
+## Current Features
 
-- **Multi-Agent Architecture**: Each agent has a distinct personality and expertise
-- **Modular Design**: Easy to extend with voice, visual tracking, and other features
-- **JSON Output**: Structured responses for easy integration
-- **Environment Configuration**: Secure API key management
-- **FastAPI Interface**: Ready for web deployment
+- Three specialized AI agents that collaborate
+- Works with free local AI (Ollama)
+- Agents can challenge each other's conclusions
+- Web interface for easy use
+- Stores conversation history
+
+## Future Features
+
+### Interactive Court
+- Choose which evidence to focus on
+- Add your own evidence to the case
+- Appeal decisions if you disagree
+
+### Smarter Memory
+- Remembers patterns in your worries
+- Learns what advice works best for you
+- Tracks your progress over time
+
+### Better Tools
+- Research psychological techniques
+- Connect to breathing exercises
+- Integration with calendar for context
+
+### Personality Options
+- Detective could act like Sherlock Holmes
+- Attorney could be like Phoenix Wright
+- Customize how formal or casual they are
 
 ## Installation
 
-1. Clone this repository
-2. Install dependencies:
-   ```bash
-   pip install -r requirements.txt
-   ```
-3. Copy `env_example.txt` to `.env` and add your OpenAI API key
-4. Run the system:
-   ```bash
-   python main.py
-   ```
+```bash
+git clone https://github.com/yourusername/anxiety-court
+cd anxiety-court
+pip install -r requirements.txt
+
+# For free local AI
+python setup_ollama.py
+
+# For OpenAI (requires API key)
+cp .env.example .env
+# Add your API key to .env
+```
 
 ## Usage
 
-### Basic Usage
 ```python
-from worry_butler import WorryButler
+from anxiety_court import AnxietyCourt
 
-butler = WorryButler()
-response = butler.process_worry("I'm worried about my presentation tomorrow")
-print(response)
+court = AnxietyCourt()
+result = court.hear_case("I'm worried about my job interview tomorrow")
+print(result.verdict)
 ```
 
-### Web Interface
-Start the FastAPI server:
+## Web Interface
+
 ```bash
-python api.py
+python app.py
+# Go to http://localhost:8000
 ```
 
-Then visit `http://localhost:8000` to use the web interface.
+## Why This Matters
+
+Most people can't afford therapy or don't know where to start. This makes mental health support:
+
+- Free and available 24/7
+- Less intimidating than traditional therapy
+- Personalized to what actually helps you
+- Fun to use instead of scary
 
 ## Project Structure
 
 ```
-worry_butler/
-├── agents/           # Individual AI agents
-├── core/            # Core system logic
-├── api/             # FastAPI web interface
-├── main.py          # Main entry point
-├── api.py           # Web API server
-└── requirements.txt # Dependencies
+anxiety_court/
+├── agents/          # Prosecutor, Attorney, Judge
+├── core/           # Main logic
+├── web/            # Web interface  
+├── app.py          # Run the web server
+└── main.py         # Command line version
 ```
-
-## Future Extensions
-
-- Voice input/output integration
-- Visual tracking and analysis
-- Multi-language support
-- Customizable agent personalities
-- Integration with mental health apps
 
 ## Contributing
 
-Feel free to contribute! The modular design makes it easy to add new agents or features.
+Want to help? We need:
+
+- Developers to improve the agents
+- Mental health experts for better techniques
+- Users to test and give feedback
 
 ## License
 
-MIT License - feel free to use this for personal or commercial projects.
+MIT - Use this however you want.
