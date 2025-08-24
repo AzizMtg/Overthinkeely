@@ -442,7 +442,7 @@ async def root():
             @keyframes shimmer { 0%,100%{opacity:0.6;} 50%{opacity:1;} }
             .character-nameplate { position:absolute; top:15px; left:30px; background: linear-gradient(135deg, #ffd700, #ffed4e); color:#000; padding:8px 20px; border-radius:20px; font-weight:700; font-size:16px; text-transform:uppercase; letter-spacing:2px; box-shadow: 0 4px 15px rgba(255,215,0,0.4), inset 0 2px 5px rgba(255,255,255,0.3); transform:translateY(-50%); border:2px solid #e6c200; }
             .dialogue-text-area { padding:60px 40px 40px 40px; height:100%; display:flex; align-items:flex-start; justify-content:flex-start; }
-            .dialogue-text { font-size:20px; line-height:1.6; color:#fff; text-shadow:2px 2px 4px rgba(0,0,0,0.8); max-height:calc(100% - 20px); overflow-y:auto; padding-right:20px; letter-spacing:0.5px; }
+            .dialogue-text { font-size:24px; line-height:1.7; color:#f0f0f0; margin:0; padding:0; text-shadow: 1px 1px 2px rgba(0,0,0,0.8); font-weight:400; letter-spacing:0.5px; }
             .dialogue-text::-webkit-scrollbar{ width:8px; } .dialogue-text::-webkit-scrollbar-track{ background:rgba(255,215,0,0.1); border-radius:4px;} .dialogue-text::-webkit-scrollbar-thumb{ background:linear-gradient(180deg,#ffd700,#e6c200); border-radius:4px; box-shadow:0 2px 5px rgba(0,0,0,0.3);} 
             .text-continue-indicator { position:absolute; bottom:15px; right:30px; color:#ffd700; font-size:14px; animation: blink 1.5s infinite; font-weight:600; }
             @keyframes blink { 0%,50%{opacity:1;} 51%,100%{opacity:0.3;} }
@@ -515,6 +515,8 @@ async def root():
             let dialogue = [];
             let idx = -1; let autoMode = false; let autoTimer = null;
             let isLoading = false;
+            let currentTextParts = [];
+            let currentPartIndex = 0;
             const nameplate = document.getElementById('characterNameplate');
             const dialogueText = document.getElementById('dialogueText');
             const spriteEl = document.getElementById('characterSprite');
@@ -553,26 +555,59 @@ async def root():
                 document.body.appendChild(el); setTimeout(()=>el.remove(), 800);
             }
             function updateProgress() {
-                const pct = Math.max(0, Math.min(100, Math.round(((idx + 1) / (dialogue.length||1)) * 100)));
+                // Calculate progress including text parts
+                let totalParts = 0;
+                let completedParts = 0;
+                
+                for (let i = 0; i < dialogue.length; i++) {
+                    const parts = splitTextIntoParts(dialogue[i].text || '');
+                    totalParts += parts.length;
+                    if (i < idx) {
+                        completedParts += parts.length;
+                    } else if (i === idx) {
+                        completedParts += currentPartIndex + 1;
+                    }
+                }
+                
+                const pct = totalParts > 0 ? Math.round((completedParts / totalParts) * 100) : 0;
                 progressFill.style.width = pct + '%';
             }
+            function splitTextIntoParts(text) {
+                const sentences = text.split(/[.!?]+/).filter(s => s.trim().length > 0);
+                const partSize = Math.ceil(sentences.length / 3);
+                const parts = [];
+                for (let i = 0; i < sentences.length; i += partSize) {
+                    const part = sentences.slice(i, i + partSize).join('. ').trim();
+                    if (part) parts.push(part + (part.endsWith('.') || part.endsWith('!') || part.endsWith('?') ? '' : '.'));
+                }
+                return parts.length > 0 ? parts : [text];
+            }
+
             function render() {
                 const node = dialogue[idx]; if (!node) return;
+                
+                // If this is a new dialogue node, split text into parts
+                if (currentTextParts.length === 0 || currentPartIndex === 0) {
+                    currentTextParts = splitTextIntoParts(node.text || '');
+                    currentPartIndex = 0;
+                }
+
                 nameplate.textContent = node.character || '';
-                dialogueText.textContent = node.text || '';
+                dialogueText.textContent = currentTextParts[currentPartIndex] || '';
                 setBackgroundClass(node.background || node.bg || '');
+                
                 // Align character by position
                 const pos = (node.position || 'center');
                 characterContainer.classList.remove('align-left','align-right','align-center');
                 if (pos === 'left') characterContainer.classList.add('align-left');
                 else if (pos === 'right') characterContainer.classList.add('align-right');
                 else characterContainer.classList.add('align-center');
+                
                 let spritePath = node.sprite || '';
                 if (spritePath && !spritePath.startsWith('/static/')) spritePath = '/static/' + spritePath;
                 if (spritePath) {
                     spriteEl.onerror = function() {
                         console.warn('Failed to load sprite:', spritePath);
-                        // Fallback to judgestand.png if sprite fails to load
                         if (this.src !== '/static/judgestand.png') {
                             this.src = '/static/judgestand.png';
                         }
@@ -585,7 +620,23 @@ async def root():
             }
             function next() {
                 if (isLoading) return;
-                if (idx < dialogue.length - 1) { idx += 1; render(); if (autoMode) scheduleAuto(); }
+                
+                // Check if we have more parts of current dialogue
+                if (currentPartIndex < currentTextParts.length - 1) {
+                    currentPartIndex++;
+                    render();
+                    if (autoMode) scheduleAuto();
+                    return;
+                }
+                
+                // Move to next dialogue node
+                if (idx < dialogue.length - 1) { 
+                    idx += 1; 
+                    currentTextParts = [];
+                    currentPartIndex = 0;
+                    render(); 
+                    if (autoMode) scheduleAuto(); 
+                }
                 else { autoOff(); continueIndicator.textContent = 'End of trial'; }
             }
             function scheduleAuto() { clearTimeout(autoTimer); autoTimer = setTimeout(next, 2400); }
