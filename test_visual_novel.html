@@ -484,15 +484,16 @@
     </style>
 </head>
 <body>
-    <div class="game-container">
-        <!-- Background Layers -->
+    <div class="game-container" id="gameContainer">
+        <!-- Background Layer -->
         <div id="backgroundLayer" class="background-layer courtroom-bg"></div>
-        
+
         <!-- Character Sprite -->
         <div class="character-container">
-            <img id="characterSprite" class="character-sprite" src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjYwMCIgdmlld0JveD0iMCAwIDQwMCA2MDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxkZWZzPgo8bGluZWFyR3JhZGllbnQgaWQ9ImJsYWNrUm9iZSIgeDE9IjAlIiB5MT0iMCUiIHgyPSIxMDAlIiB5Mj0iMTAwJSI+CjxzdG9wIG9mZnNldD0iMCUiIHN0eWxlPSJzdG9wLWNvbG9yOiMyYzJjMmM7c3RvcC1vcGFjaXR5OjEiIC8+CjxzdG9wIG9mZnNldD0iMTAwJSIgc3R5bGU9InN0b3AtY29sb3I6IzAwMDswcGFjaXR5OjEiIC8+CjwvbGluZWFyR3JhZGllbnQ+CjxsaW5lYXJHcmFkaWVudCBpZD0iZ29sZFRyaW0iIHgxPSIwJSIgeTE9IjAlIiB4Mj0iMTAwJSIgeTI9IjEwMCUiPgo8c3RvcCBvZmZzZXQ9IjAlIiBzdHlsZT0ic3RvcC1jb2xvcjojZmZkNzAwO3N0b3Atb3BhY2l0eToxIiAvPgo8c3RvcCBvZmZzZXQ9IjEwMCUiIHN0eWxlPSJzdG9wLWNvbG9yOiNlNmMyMDA7c3RvcC1vcGFjaXR5OjEiIC8+CjwvbGluZWFyR3JhZGllbnQ+CjwvZGVmcz4KPCEtLSBKdWRnZSBGaWd1cmUgLS0+CjxyZWN0IHg9IjE1MCIgeT0iMjAwIiB3aWR0aD0iMTAwIiBoZWlnaHQ9IjQwMCIgZmlsbD0idXJsKCNibGFja1JvYmUpIiByeD0iMTAiLz4KPCEtLSBHb2xkIFRyaW0gLS0+CjxyZWN0IHg9IjE0NSIgeT0iMTk1IiB3aWR0aD0iMTEwIiBoZWlnaHQ9IjIwIiBmaWxsPSJ1cmwoI2dvbGRUcmltKSIgcng9IjUiLz4KPCEtLSBIZWFkIC0tPgo8Y2lyY2xlIGN4PSIyMDAiIGN5PSIxNTAiIHI9IjUwIiBmaWxsPSIjZmZkYmFjIiBzdHJva2U9IiMwMDAiIHN0cm9rZS13aWR0aD0iMiIvPgo8IS0tIEV5ZXMgLS0+CjxjaXJjbGUgY3g9IjE4NSIgY3k9IjE0MCIgcj0iNSIgZmlsbD0iIzAwMCIvPgo8Y2lyY2xlIGN4PSIyMTUiIGN5PSIxNDAiIHI9IjUiIGZpbGw9IiMwMDAiLz4KPCEtLSBNb3V0aCAtLT4KPGVsbGlwc2UgY3g9IjIwMCIgY3k9IjE2NSIgcng9IjE1IiByeT0iOCIgZmlsbD0iIzAwMCIvPgo8IS0tIEhhdCAtLT4KPHJlY3QgeD0iMTcwIiB5PSIxMDAiIHdpZHRoPSI2MCIgaGVpZ2h0PSI0MCIgZmlsbD0idXJsKCNibGFja1JvYmUpIiByeD0iNSIvPgo8cmVjdCB4PSIxNjUiIHk9IjkwIiB3aWR0aD0iNzAiIGhlaWdodD0iMjAiIGZpbGw9InVybCgjZ29sZFRyaW0pIiByeD0iMTAiLz4KPCEtLSBBcm1zIC0tPgo8cmVjdCB4PSIxMDAiIHk9IjI1MCIgd2lkdGg9IjQwIiBoZWlnaHQ9IjE1MCIgZmlsbD0idXJsKCNibGFja1JvYmUpIiByeD0iMjAiLz4KPHJlY3QgeD0iMjYwIiB5PSIyNTAiIHdpZHRoPSI0MCIgaGVpZ2h0PSIxNTAiIGZpbGw9InVybCgjYmxhY2tSb2JlKSIgcng9IjIwIi8+CjwvZXZnPg==" alt="Judge Character">
+            <img id="characterSprite" class="character-sprite" alt="Character Sprite"
+                 src="worry_butler/sprites/judge-normal.gif">
         </div>
-        
+
         <!-- Text Box -->
         <div class="text-box-container">
             <div class="text-box">
@@ -505,14 +506,14 @@
                 <div id="continueIndicator" class="text-continue-indicator">▶ Click to continue</div>
             </div>
         </div>
-        
+
         <!-- UI Controls -->
         <div class="ui-controls">
-            <button class="control-button" onclick="skipDialogue()">⏭ Skip</button>
-            <button id="autoButton" class="control-button" onclick="toggleAuto()">▶ Auto</button>
-            <button class="control-button" onclick="resetTrial()">🔄 Reset</button>
+            <button class="control-button" id="skipBtn">⏭ Skip</button>
+            <button id="autoButton" class="control-button">▶ Auto</button>
+            <button class="control-button" id="resetBtn">🔄 Reset</button>
         </div>
-        
+
         <!-- Progress Display -->
         <div class="progress-container">
             <div class="progress-label">Trial Progress</div>
@@ -520,12 +521,12 @@
                 <div id="progressFill" class="progress-fill"></div>
             </div>
         </div>
-        
+
         <!-- Test Mode Overlay -->
         <div class="test-overlay">
             <h3>🧪 Test Mode Active</h3>
             <p><strong>Enhanced Ace Attorney Style!</strong></p>
-            <p>• Proper character sprites with animations</p>
+            <p>• Character sprite with animations</p>
             <p>• Authentic text box styling</p>
             <p>• Dynamic backgrounds per character</p>
             <p>• Sound effect indicators</p>
@@ -535,10 +536,158 @@
     </div>
 
     <script>
-        // Enhanced test dialogue with proper character data
+        // Minimal, complete test dialogue
         const testDialogue = [
             {
-                character: "PROSECUTOR",
-                name: "PROSECUTOR",
-                text: "OH, THE HORROR! THE UNTHINKABLE! The absolute WORST that could POSSIBLY happen! Picture this, if you dare: You walk into your first class, and EVERYONE is already in tight-knit friend groups! They're all laughing and sharing inside jokes while you stand there like a lonely island in a sea of social butterflies! And what if you sit at the wrong table at lunch? The CRIMES OF SOCIAL ETIQUETTE! You could accidentally sit with the 'cool kids' and they'll all give you that look - you know the one that says 'Who invited this random person to our exclusive club?' But wait, it gets WORSE! What if you're assigned a group project and NOBODY wants to work with you? You'll be the last one picked, like in gym class, but this time it's your academic future at stake! The very thought sends shivers down my digital spine! This isn't just a worry - this is a FULL-BLOWN SOCIAL APOCALYPSE waiting to happen!",
-                sprite: "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjYwMCIgdmlld0JveD0iMCAwIDQwMCA2MDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxkZWZzPgo8bGluZWFyR3JhZGllbnQgaWQ9InJlZFN1aXQiIHgxPSIwJSIgeTE9IjAlIiB4Mj0iMTAwJSIgeTI9IjEwMCUiPgo8c3RvcCBvZmZzZXQ9IjAlIiBzdHlsZT0ic3RvcC1jb2xvcjojZGMxNDNjO3N0b3Atb3BhY2l0eToxIiAvPgo8c3RvcCBvZmZzZXQ9IjEwMCUiIHN0eWxlPSJzdG9wLWNvbG9yOiM4YjAwMDA7c3RvcC1vcGFjaXR5OjEiIC8+CjwvbGluZWFyR3JhZGllbnQ+CjwvZGVmcz4KPCEtLSBQcm9zZWN1dG9yIEZpZ3VyZSAtLT4KPHJlY3QgeD0iMTQwIiB5PSIyMDAiIHdpZHRoPSIxMjAiIGhlaWdodD0iNDAwIiBmaWxsPSJ1cmwoI3JlZFN1aXQpIiByeD0iMTAiLz4KPCEtLSBIZWFkIC0tPgo8Y2lyY2xlIGN4PSIyMDAiIGN5PSIxNTAiIHI9IjUwIiBmaWxsPSIjZmZkYmFjIiBzdHJva2U9IiMwMDAiIHN0cm9rZS13aWR0aD0iMiIvPgo8IS0tIEFuZ3J5IEV5ZXMgLS0+CjxwYXRoIGQ9Ik0xNzUgMTM1IEwxOTUgMTQ1IEwxNzUgMTU1IiBzdHJva2U9IiNmZjAwMDAiIHN0cm9rZS13aWR0aD0iNCIgZmlsbD0ibm9uZSIvPgo8cGF0aCBkPSJNMjI1IDEzNSBMMjA1IDE0NSBMMjI1IDE1NSIgc3Ryb2tlPSIjZmYwMDAwIiBzdHJva2Utd2lkdGg9IjQiIGZpbGw9Im5vbmUiLz4KPCEtLSBBbmdyeSBNb3V0aCAtLT4KPHBhdGggZD
+                character: 'JUDGE',
+                text: "Court is now in session. Let's hear the concerns.",
+                bg: 'judge-bg',
+                sprite: 'worry_butler/sprites/judge-speaking.gif',
+                sfx: 'gavel'
+            },
+            {
+                character: 'PROSECUTOR',
+                text: 'The worst could happen! Social catastrophe at orientation! No friends, wrong table, last in group projects!',
+                bg: 'prosecutor-bg',
+                sprite: 'worry_butler/sprites/prosecutor_angry1.gif',
+                sfx: 'objection'
+            },
+            {
+                character: 'DEFENSE',
+                text: "Objection. We can proceed step by step: say hello, join one activity, and you'll find your people.",
+                bg: 'defense-bg',
+                sprite: 'worry_butler/sprites/defense_reassuring1.gif',
+                sfx: 'hold-it'
+            },
+            {
+                character: 'JUDGE',
+                text: 'Very well. The court advises a small-first-steps approach. Case adjourned.',
+                bg: 'courtroom-bg',
+                sprite: 'worry_butler/sprites/judge-normal.gif',
+                sfx: 'gavel'
+            }
+        ];
+
+        // State
+        let idx = -1;
+        let autoMode = false;
+        let autoTimer = null;
+
+        // Elements
+        const nameplate = document.getElementById('characterNameplate');
+        const dialogueText = document.getElementById('dialogueText');
+        const spriteEl = document.getElementById('characterSprite');
+        const bgLayer = document.getElementById('backgroundLayer');
+        const progressFill = document.getElementById('progressFill');
+        const autoBtn = document.getElementById('autoButton');
+        const game = document.getElementById('gameContainer');
+        const skipBtn = document.getElementById('skipBtn');
+        const resetBtn = document.getElementById('resetBtn');
+
+        // Helpers
+        function setBackground(bgClass) {
+            bgLayer.className = `background-layer ${bgClass || 'courtroom-bg'}`;
+        }
+
+        function playSfxIndicator(kind) {
+            if (!kind) return;
+            const el = document.createElement('div');
+            el.className = 'sound-effect';
+            el.textContent = {
+                'gavel': 'Gavel!⚖️',
+                'objection': 'Objection!',
+                'hold-it': 'Hold it!'
+            }[kind] || 'SFX';
+            document.body.appendChild(el);
+            setTimeout(() => el.remove(), 800);
+            // Quick flash
+            const flash = document.createElement('div');
+            flash.className = 'screen-flash';
+            document.body.appendChild(flash);
+            setTimeout(() => flash.remove(), 200);
+        }
+
+        function updateProgress() {
+            const pct = Math.max(0, Math.min(100, Math.round(((idx + 1) / testDialogue.length) * 100)));
+            progressFill.style.width = pct + '%';
+        }
+
+        function render() {
+            const node = testDialogue[idx];
+            if (!node) return;
+            nameplate.textContent = node.character || '';
+            dialogueText.textContent = node.text || '';
+            setBackground(node.bg);
+            // Sprite swap (optional)
+            if (node.sprite) spriteEl.src = node.sprite;
+            spriteEl.classList.remove('sprite-animation');
+            void spriteEl.offsetWidth; // reflow to restart animation
+            spriteEl.classList.add('sprite-animation');
+            updateProgress();
+            playSfxIndicator(node.sfx);
+        }
+
+        function next() {
+            if (idx < testDialogue.length - 1) {
+                idx += 1;
+                render();
+                if (autoMode) scheduleAuto();
+            } else {
+                // End
+                autoOff();
+                document.getElementById('continueIndicator').textContent = 'End of demo';
+            }
+        }
+
+        function scheduleAuto() {
+            clearTimeout(autoTimer);
+            autoTimer = setTimeout(next, 2200);
+        }
+
+        function autoOn() {
+            autoMode = true;
+            autoBtn.classList.add('active');
+            scheduleAuto();
+        }
+
+        function autoOff() {
+            autoMode = false;
+            autoBtn.classList.remove('active');
+            clearTimeout(autoTimer);
+        }
+
+        function toggleAuto() {
+            if (autoMode) autoOff(); else autoOn();
+        }
+
+        function skipDialogue() {
+            idx = testDialogue.length - 2; // next() will move to last
+            next();
+        }
+
+        function resetTrial() {
+            autoOff();
+            idx = -1;
+            document.getElementById('continueIndicator').textContent = '▶ Click to continue';
+            next();
+        }
+
+        // Wire events
+        game.addEventListener('click', () => {
+            if (!autoMode) next();
+        });
+        autoBtn.addEventListener('click', (e) => { e.stopPropagation(); toggleAuto(); });
+        skipBtn.addEventListener('click', (e) => { e.stopPropagation(); skipDialogue(); });
+        resetBtn.addEventListener('click', (e) => { e.stopPropagation(); resetTrial(); });
+        document.addEventListener('keydown', (e) => {
+            if (e.key === ' ' || e.key === 'Enter') {
+                e.preventDefault();
+                if (!autoMode) next();
+            }
+        });
+
+        // Start
+        next();
+    </script>
+</body>
+</html>

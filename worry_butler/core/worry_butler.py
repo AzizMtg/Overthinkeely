@@ -1,17 +1,15 @@
 #!/usr/bin/env python3
 """
-Core Worry Butler system implementing a chained multi-agent workflow.
+Core Worry Butler system implementing a single-call multi-voice workflow.
 
-This module orchestrates three specialized AI agents that work in sequence:
-1. Overthinker Agent - generates dramatic worst-case scenarios
-2. Therapist Agent - applies CBT techniques to reframe and calm
-3. Executive Agent - creates actionable, reassuring summaries
+This module uses a ConciergeAgent to produce, in one LLM call:
+1. Overthinker (Prosecutor) - dramatic worst-case scenarios
+2. Therapist (Defense) - CBT reframing and calming
+3. Executive (Judge) - actionable, reassuring one-sentence summary
 """
 
 from typing import Dict, Any, List
-from worry_butler.agents.overthinker_agent import OverthinkerAgent
-from worry_butler.agents.therapist_agent import TherapistAgent
-from worry_butler.agents.executive_agent import ExecutiveAgent
+from worry_butler.agents.concierge_agent import ConciergeAgent
 
 
 class WorryButler:
@@ -38,20 +36,8 @@ class WorryButler:
         else:
             provider = "ollama"
         
-        # Initialize the three agents with the determined provider
-        self.overthinker = OverthinkerAgent(
-            provider=provider,
-            ollama_model=ollama_model,
-            ollama_base_url=ollama_base_url
-        )
-        
-        self.therapist = TherapistAgent(
-            provider=provider,
-            ollama_model=ollama_model,
-            ollama_base_url=ollama_base_url
-        )
-        
-        self.executive = ExecutiveAgent(
+        # Initialize the single concierge agent with the determined provider
+        self.concierge = ConciergeAgent(
             provider=provider,
             ollama_model=ollama_model,
             ollama_base_url=ollama_base_url
@@ -68,43 +54,34 @@ class WorryButler:
         """
         Process a user's worry through the three-agent chain.
         
-        This is the main function that implements the sequential workflow:
-        1. Overthinker receives user input → generates dramatic scenario
-        2. Therapist receives Overthinker output → applies CBT techniques
-        3. Executive receives Therapist output → creates actionable summary
+        This is the main function that performs a single LLM call via ConciergeAgent
+        and returns all three role outputs.
         
         Args:
             user_worry: The user's original worry statement
             
         Returns:
-            Dictionary containing the complete conversation chain:
+            Dictionary containing the complete conversation:
             - original_worry: User's input
-            - overthinker_response: Dramatic worst-case scenario
-            - therapist_response: CBT reframing and calming response
-            - executive_summary: Actionable, reassuring summary
-            - metadata: Processing information and timestamps
+            - overthinker_response: Dramatic worst-case scenario (from concierge)
+            - therapist_response: CBT reframing and calming response (from concierge)
+            - executive_summary: Actionable, reassuring summary (from concierge)
+            - metadata: Processing information
             
         Raises:
             Exception: If any agent fails to process the input
         """
         try:
-            # Step 1: Overthinker Agent - Generate dramatic worst-case scenario
-            print("🎭 Overthinker Agent processing...")
-            overthinker_response = self.overthinker.process_worry(user_worry)
-            
-            # Step 2: Therapist Agent - Apply CBT techniques to Overthinker's output
-            print("🧘‍♀️ Therapist Agent processing...")
-            therapist_response = self.therapist.process_overthinking(
-                user_worry, overthinker_response
-            )
-            
-            # Step 3: Executive Agent - Create actionable summary from Therapist's output
-            print("📋 Executive Agent processing...")
-            executive_summary = self.executive.create_summary(
-                user_worry, overthinker_response, therapist_response
-            )
-            
-            # Compile the complete conversation chain
+            # Single call to ConciergeAgent to get all three role outputs
+            print("🛎️ Concierge Agent processing (single-call)...")
+            bundle = self.concierge.generate_all(user_worry)
+
+            # Map to legacy keys expected by API/frontend
+            overthinker_response = bundle.get("overthinker", "")
+            therapist_response = bundle.get("therapist", "")
+            executive_summary = bundle.get("executive", "")
+
+            # Compile the complete conversation bundle
             result = {
                 "original_worry": user_worry,
                 "overthinker_response": overthinker_response,
@@ -112,8 +89,8 @@ class WorryButler:
                 "executive_summary": executive_summary,
                 "metadata": {
                     "workflow_completed": True,
-                    "agent_sequence": ["overthinker", "therapist", "executive"],
-                    "processing_notes": "Three-agent chain completed successfully"
+                    "agent_sequence": ["concierge"],
+                    "processing_notes": "Single-call concierge completed successfully"
                 }
             }
             
@@ -138,12 +115,8 @@ class WorryButler:
             }
             
             # Include any partial results that were generated before the error
-            if 'overthinker_response' in locals():
-                partial_result["partial_results"]["overthinker_response"] = overthinker_response
-            if 'therapist_response' in locals():
-                partial_result["partial_results"]["therapist_response"] = therapist_response
-            if 'executive_summary' in locals():
-                partial_result["partial_results"]["executive_summary"] = executive_summary
+            if 'bundle' in locals():
+                partial_result["partial_results"].update(bundle)
             
             raise Exception(error_msg)
     
@@ -155,9 +128,7 @@ class WorryButler:
             List of dictionaries containing agent information
         """
         return [
-            self.overthinker.get_agent_info(),
-            self.therapist.get_agent_info(),
-            self.executive.get_agent_info()
+            self.concierge.get_agent_info(),
         ]
     
     def get_provider_info(self) -> Dict[str, Any]:
