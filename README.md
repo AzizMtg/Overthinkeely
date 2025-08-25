@@ -113,7 +113,7 @@ print(result.verdict)
 ## Web Interface
 
 ```bash
-python app.py
+python api.py
 # Go to http://localhost:8000
 ```
 
