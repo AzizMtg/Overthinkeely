@@ -154,25 +154,25 @@ class SpriteSelector:
         """Initialize the sprite selector with character-specific sprite mappings."""
         
         # Prosecutor (Overthinker) sprites - dramatic and intense
-        # Multiple numbered variants for animation loops
-        # Map to actual available files
+        # Multiple numbered variants for text parts progression
         self.prosecutor_sprites = {
-            "angry": ["prosecutor.gif"],
-            "smug": ["prosecutor.gif"],
-            "worried": ["prosecutor.gif"],
-            "dramatic": ["prosecutor.gif"],
-            "intense": ["prosecutor.gif"],
-            "default": ["prosecutor.gif"]
+            "angry": ["prosecutor.gif", "prosecutor2.gif", "prosecutor3.gif"],
+            "smug": ["prosecutor.gif", "prosecutor2.gif", "prosecutor3.gif"],
+            "worried": ["prosecutor.gif", "prosecutor2.gif", "prosecutor3.gif"],
+            "dramatic": ["prosecutor.gif", "prosecutor2.gif", "prosecutor3.gif"],
+            "intense": ["prosecutor.gif", "prosecutor2.gif", "prosecutor3.gif"],
+            "default": ["prosecutor.gif", "prosecutor2.gif", "prosecutor3.gif"]
         }
         
         # Defense (Therapist) sprites - calm and supportive
+        # Multiple numbered variants for text parts progression
         self.defense_sprites = {
-            "calm": ["defense.gif"],
-            "cheerful": ["defense.gif"],
-            "reassuring": ["defense.gif"],
-            "confident": ["defense.gif"],
-            "gentle": ["defense.gif"],
-            "default": ["defense.gif"]
+            "calm": ["defense.gif", "defense2.gif", "defense3.gif"],
+            "cheerful": ["defense.gif", "defense2.gif", "defense3.gif"],
+            "reassuring": ["defense.gif", "defense2.gif", "defense3.gif"],
+            "confident": ["defense.gif", "defense2.gif", "defense3.gif"],
+            "gentle": ["defense.gif", "defense2.gif", "defense3.gif"],
+            "default": ["defense.gif", "defense2.gif", "defense3.gif"]
         }
         
         # Judge sprites - authoritative and wise
@@ -250,17 +250,17 @@ class SpriteSelector:
         else:  # judge
             return "neutral"   # Judge is always neutral
     
-    def select_sprite(self, character_type: str, emotion: str) -> str:
+    def select_sprite(self, character_type: str, emotion: str, part_index: int = 0) -> str:
         """
-        Select the appropriate sprite filename based on character and emotion.
-        Returns the first sprite in the animation sequence.
+        Select the appropriate sprite filename based on character, emotion, and text part.
         
         Args:
             character_type: The character type (prosecutor, defense, judge)
             emotion: The emotional state to display
+            part_index: The current text part index (0, 1, 2)
             
         Returns:
-            The sprite filename (first frame of animation)
+            The sprite filename for the specific part
         """
         if character_type == "prosecutor":
             sprites = self.prosecutor_sprites.get(emotion, self.prosecutor_sprites["default"])
@@ -271,8 +271,13 @@ class SpriteSelector:
         else:
             return "unknown_character.gif"
         
-        # Return the first sprite in the sequence (for animation)
-        return sprites[0] if isinstance(sprites, list) else sprites
+        # Return the sprite for the specific part index
+        if isinstance(sprites, list) and len(sprites) > part_index:
+            return sprites[part_index]
+        elif isinstance(sprites, list):
+            return sprites[0]  # Fallback to first sprite
+        else:
+            return sprites
     
     def get_animation_sequence(self, character_type: str, emotion: str) -> List[str]:
         """
@@ -443,6 +448,8 @@ async def root():
             .character-nameplate { position:absolute; top:15px; left:30px; background: linear-gradient(135deg, #ffd700, #ffed4e); color:#000; padding:8px 20px; border-radius:20px; font-weight:700; font-size:16px; text-transform:uppercase; letter-spacing:2px; box-shadow: 0 4px 15px rgba(255,215,0,0.4), inset 0 2px 5px rgba(255,255,255,0.3); transform:translateY(-50%); border:2px solid #e6c200; }
             .dialogue-text-area { padding:60px 40px 40px 40px; height:100%; display:flex; align-items:flex-start; justify-content:flex-start; }
             .dialogue-text { font-size:24px; line-height:1.7; color:#f0f0f0; margin:0; padding:0; text-shadow: 1px 1px 2px rgba(0,0,0,0.8); font-weight:400; letter-spacing:0.5px; }
+            .typewriter { border-right: 2px solid #ffd700; animation: blink-caret 0.75s step-end infinite; }
+            @keyframes blink-caret { from, to { border-color: transparent; } 50% { border-color: #ffd700; } }
             .dialogue-text::-webkit-scrollbar{ width:8px; } .dialogue-text::-webkit-scrollbar-track{ background:rgba(255,215,0,0.1); border-radius:4px;} .dialogue-text::-webkit-scrollbar-thumb{ background:linear-gradient(180deg,#ffd700,#e6c200); border-radius:4px; box-shadow:0 2px 5px rgba(0,0,0,0.3);} 
             .text-continue-indicator { position:absolute; bottom:15px; right:30px; color:#ffd700; font-size:14px; animation: blink 1.5s infinite; font-weight:600; }
             @keyframes blink { 0%,50%{opacity:1;} 51%,100%{opacity:0.3;} }
@@ -491,10 +498,16 @@ async def root():
                 </div>
             </div>
             <div class="ui-controls">
+                <button class="control-button" id="soundBtn">🔊</button>
                 <button class="control-button" id="skipBtn">⏭ Skip</button>
                 <button id="autoButton" class="control-button">▶ Auto</button>
                 <button class="control-button" id="resetBtn">🔄 Reset</button>
             </div>
+            
+            <!-- Background Music -->
+            <audio id="bgMusic" loop preload="auto">
+                <source src="/static/TRIAL_OST.mp3" type="audio/mpeg">
+            </audio>
             <div class="progress-container">
                 <div class="progress-label">Trial Progress</div>
                 <div class="progress-bar"><div id="progressFill" class="progress-fill"></div></div>
@@ -517,6 +530,8 @@ async def root():
             let isLoading = false;
             let currentTextParts = [];
             let currentPartIndex = 0;
+            let typewriterTimer = null;
+            let isTypewriting = false;
             const nameplate = document.getElementById('characterNameplate');
             const dialogueText = document.getElementById('dialogueText');
             const spriteEl = document.getElementById('characterSprite');
@@ -527,8 +542,12 @@ async def root():
             const game = document.getElementById('gameContainer');
             const skipBtn = document.getElementById('skipBtn');
             const resetBtn = document.getElementById('resetBtn');
+            const soundBtn = document.getElementById('soundBtn');
+            const bgMusic = document.getElementById('bgMusic');
             const loadingOverlay = document.getElementById('loadingOverlay');
             const continueIndicator = document.getElementById('continueIndicator');
+            
+            let isMusicEnabled = true;
 
             function setBackgroundClass(filenameOrHint) {
                 const hint = (filenameOrHint || '').toLowerCase();
@@ -583,6 +602,63 @@ async def root():
                 return parts.length > 0 ? parts : [text];
             }
 
+            function typewriteText(text, callback) {
+                clearTimeout(typewriterTimer);
+                isTypewriting = true;
+                dialogueText.textContent = '';
+                dialogueText.classList.add('typewriter');
+                
+                let i = 0;
+                const speed = 15; // Faster, smoother typing - 15ms per character
+                
+                function typeChar() {
+                    if (i < text.length) {
+                        dialogueText.textContent += text.charAt(i);
+                        i++;
+                        typewriterTimer = setTimeout(typeChar, speed);
+                    } else {
+                        dialogueText.classList.remove('typewriter');
+                        isTypewriting = false;
+                        if (callback) callback();
+                    }
+                }
+                typeChar();
+            }
+            
+            function skipTypewriter() {
+                if (isTypewriting) {
+                    clearTimeout(typewriterTimer);
+                    dialogueText.classList.remove('typewriter');
+                    isTypewriting = false;
+                    // Show full text immediately
+                    const node = dialogue[idx];
+                    if (node && currentTextParts.length > 0) {
+                        dialogueText.textContent = currentTextParts[currentPartIndex] || '';
+                    }
+                    updateProgress();
+                }
+            }
+
+            function getSpriteForPart(node, partIndex) {
+                // Get the appropriate sprite based on character type and part index
+                const character = node.character || '';
+                let baseName = '';
+                
+                if (character === 'PROSECUTOR') {
+                    baseName = 'prosecutor';
+                } else if (character === 'DEFENSE') {
+                    baseName = 'defense';
+                } else if (character === 'JUDGE') {
+                    return node.sprite || 'judge.gif'; // Judge doesn't have numbered variants
+                }
+                
+                // Return the appropriate numbered sprite for the part
+                if (partIndex === 0) return baseName + '.gif';
+                else if (partIndex === 1) return baseName + '2.gif';
+                else if (partIndex === 2) return baseName + '3.gif';
+                else return baseName + '.gif'; // fallback
+            }
+
             function render() {
                 const node = dialogue[idx]; if (!node) return;
                 
@@ -593,7 +669,6 @@ async def root():
                 }
 
                 nameplate.textContent = node.character || '';
-                dialogueText.textContent = currentTextParts[currentPartIndex] || '';
                 setBackgroundClass(node.background || node.bg || '');
                 
                 // Align character by position
@@ -603,7 +678,8 @@ async def root():
                 else if (pos === 'right') characterContainer.classList.add('align-right');
                 else characterContainer.classList.add('align-center');
                 
-                let spritePath = node.sprite || '';
+                // Get sprite for current part
+                let spritePath = getSpriteForPart(node, currentPartIndex);
                 if (spritePath && !spritePath.startsWith('/static/')) spritePath = '/static/' + spritePath;
                 if (spritePath) {
                     spriteEl.onerror = function() {
@@ -616,10 +692,15 @@ async def root():
                 }
                 spriteEl.classList.remove('sprite-animation'); void spriteEl.offsetWidth; spriteEl.classList.add('sprite-animation');
                 playSfxIndicator(node.character === 'JUDGE' ? 'gavel' : node.character === 'PROSECUTOR' ? 'objection' : 'hold-it');
-                updateProgress();
+                
+                // Start typewriter effect
+                const textToShow = currentTextParts[currentPartIndex] || '';
+                typewriteText(textToShow, () => {
+                    updateProgress();
+                });
             }
             function next() {
-                if (isLoading) return;
+                if (isLoading || isTypewriting) return;
                 
                 // Check if we have more parts of current dialogue
                 if (currentPartIndex < currentTextParts.length - 1) {
@@ -645,6 +726,27 @@ async def root():
             function toggleAuto() { autoMode ? autoOff() : autoOn(); }
             function skipDialogue() { if (dialogue.length>0){ idx = dialogue.length - 2; next(); }}
             function resetTrial() { autoOff(); idx = -1; document.getElementById('continueIndicator').textContent = '▶ Click to continue'; fetchAndStart(true); }
+            
+            function toggleMusic() {
+                if (isMusicEnabled) {
+                    bgMusic.pause();
+                    soundBtn.textContent = '🔇';
+                    soundBtn.classList.add('active');
+                    isMusicEnabled = false;
+                } else {
+                    bgMusic.play().catch(e => console.log('Audio play failed:', e));
+                    soundBtn.textContent = '🔊';
+                    soundBtn.classList.remove('active');
+                    isMusicEnabled = true;
+                }
+            }
+            
+            function startBackgroundMusic() {
+                if (isMusicEnabled) {
+                    bgMusic.volume = 0.3; // Set to 30% volume
+                    bgMusic.play().catch(e => console.log('Audio autoplay blocked:', e));
+                }
+            }
 
             function setLoading(on) {
                 isLoading = !!on;
@@ -679,7 +781,9 @@ async def root():
                             position: d.position || 'center'
                         }));
                     }
-                    if (dialogue.length > 0) next();
+                    if (dialogue.length > 0) {
+                        next();
+                    }
                 } catch (e) {
                     console.error('Fetch error', e);
                     dialogue = [
@@ -692,11 +796,25 @@ async def root():
             }
 
             // Wire events
-            game.addEventListener('click', () => { if (!autoMode && !isLoading) fetchAndStart(); });
+            game.addEventListener('click', () => { 
+                if (!autoMode && !isLoading && !isTypewriting) {
+                    startBackgroundMusic(); // Start music on first user interaction
+                    fetchAndStart();
+                }
+            });
             autoBtn.addEventListener('click', (e) => { e.stopPropagation(); toggleAuto(); });
-            skipBtn.addEventListener('click', (e) => { e.stopPropagation(); if (!isLoading) skipDialogue(); });
-            resetBtn.addEventListener('click', (e) => { e.stopPropagation(); if (!isLoading) resetTrial(); });
-            document.addEventListener('keydown', (e) => { if (e.key===' '||e.key==='Enter'){ e.preventDefault(); if (!autoMode && !isLoading) fetchAndStart(); }});
+            skipBtn.addEventListener('click', (e) => { e.stopPropagation(); if (!isLoading && !isTypewriting) skipDialogue(); });
+            resetBtn.addEventListener('click', (e) => { e.stopPropagation(); if (!isLoading && !isTypewriting) resetTrial(); });
+            soundBtn.addEventListener('click', (e) => { e.stopPropagation(); toggleMusic(); });
+            document.addEventListener('keydown', (e) => { 
+                if (e.key===' '||e.key==='Enter'){ 
+                    e.preventDefault(); 
+                    if (!autoMode && !isLoading && !isTypewriting) {
+                        startBackgroundMusic(); // Start music on keyboard interaction
+                        fetchAndStart();
+                    }
+                }
+            });
 
             // Start with the welcome line active
         </script>
