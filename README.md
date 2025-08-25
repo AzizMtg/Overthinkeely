@@ -49,7 +49,7 @@ In short: **Anxiety Court** turns timeless methods of reflection into a playful,
 
 ### ⚖️ A Note to Law Students
 
-Yes, we know… real courts don’t actually work like this!  
+Yes, I know… real courts don’t actually work like this!  
 This project is heavily inspired by *Ace Attorney* and courtroom drama in games, not legal accuracy. Think of it as a **theatrical metaphor** for inner dialogue rather than a simulation of real legal systems. If you’re a law student, forgive the liberties taken, the point is mental health support, not procedural accuracy :p 
 
 
@@ -90,16 +90,14 @@ anxiety_court/
 ## Installation
 
 ```bash
-git clone https://github.com/yourusername/anxiety-court
+git clone https://github.com/AzizMtg/anxiety-court
 cd anxiety-court
 pip install -r requirements.txt
 
 # For free local AI
 python setup_ollama.py
 
-# For OpenAI (requires API key)
-cp .env.example .env
-# Add your API key to .env
+# For non local AI Add your API key to .env
 ```
 
 ## Usage
