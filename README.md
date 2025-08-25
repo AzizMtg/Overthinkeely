@@ -9,6 +9,8 @@
 
 ## What is Anxiety Court?
 
+![ezgif-179f1f05ae2619](https://github.com/user-attachments/assets/f3c5e004-64d8-4904-9197-5ed617d73001)
+
 A simple AI system that helps you deal with anxiety by putting your worries through a courtroom trial. Three AI agents work together:
 
 - **Prosecutor**: Takes your worry and argues for the worst-case scenarios
@@ -30,6 +32,27 @@ The agents talk to each other and share information to give you better support.
 - Agents can challenge each other's conclusions
 - Web interface for easy use
 - Stores conversation history
+
+
+### 🎓 Inspirations
+
+This project is rooted in real traditions of philosophy and therapy:
+
+- **Socratic Dialogue** – testing ideas by letting opposing arguments clash until balance emerges  
+- **Cognitive Behavioral Therapy (CBT)** – challenging anxious, extreme thoughts with evidence and rational counterpoints  
+- **Dialectical Behavior Therapy (DBT)** – finding a middle path between emotional extremes  
+- **Narrative Therapy** – treating problems as something external that can be “put on trial”  
+
+In short: **Anxiety Court** turns timeless methods of reflection into a playful, interactive format.  
+
+---
+
+### ⚖️ A Note to Law Students
+
+Yes, we know… real courts don’t actually work like this!  
+This project is heavily inspired by *Ace Attorney* and courtroom drama in games, not legal accuracy. Think of it as a **theatrical metaphor** for inner dialogue rather than a simulation of real legal systems. If you’re a law student, forgive the liberties taken, the point is mental health support, not procedural accuracy :p 
+
+
 
 ## Future Features
 
@@ -53,6 +76,17 @@ The agents talk to each other and share information to give you better support.
 - Attorney could be like Phoenix Wright
 - Customize how formal or casual they are
 
+
+## Project Structure
+
+```
+anxiety_court/
+├── agents/          # Prosecutor, Attorney, Judge
+├── core/           # Main logic
+├── web/            # Web interface  
+├── app.py          # Run the web server
+└── main.py         # Command line version
+```
 ## Installation
 
 ```bash
@@ -83,26 +117,6 @@ print(result.verdict)
 ```bash
 python app.py
 # Go to http://localhost:8000
-```
-
-## Why This Matters
-
-Most people can't afford therapy or don't know where to start. This makes mental health support:
-
-- Free and available 24/7
-- Less intimidating than traditional therapy
-- Personalized to what actually helps you
-- Fun to use instead of scary
-
-## Project Structure
-
-```
-anxiety_court/
-├── agents/          # Prosecutor, Attorney, Judge
-├── core/           # Main logic
-├── web/            # Web interface  
-├── app.py          # Run the web server
-└── main.py         # Command line version
 ```
 
 ## Contributing
